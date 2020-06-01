@@ -19,9 +19,9 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-ADDRESS = "43:43:A0:12:1F:AC"
-OWM_KEY = "XXXXXXXXXXXXXXXXXXXXXXXX"
-OWM_LOCATION = "Prague"
+ADDRESS = "20:70:02:A0:1F:AC"
+OWM_KEY = ""
+OWM_LOCATION = ""
 
 app = asteroid.app.App(ADDRESS, verbose=args.verbose)
 
