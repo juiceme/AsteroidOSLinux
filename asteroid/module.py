@@ -8,7 +8,7 @@ import pyowm
 import pydbus as dbus
 from asteroid import Asteroid, DBusEavesdropper, WeatherPredictions
 from gi.repository import GLib
-
+import _thread
 
 def merge_dicts(first, second):
     """ Recursively deep merges two dictionaries """
@@ -59,6 +59,32 @@ class TimeSyncModule(Module):
     def _properties_changed(self, name, changed, lst):
         if changed.get("Connected", False):
             self._update_time()
+
+class JModule(Module):
+
+    def _execute_periodically(self, period, function):
+        def timer_tick():
+            t = time.time()
+            count = 0
+            while True:
+                count += 1
+                yield max(t + count*period - time.time(), 0)
+        tick = timer_tick()
+        while True:
+            function()
+            time.sleep(next(tick))
+
+    def _send(self):
+        self.asteroid.notify("jiihaa", body="booboo",
+                             id_=1001,
+                             app_name="burp")
+        self.logger.info("Sent notification")
+        self.number = self.number + 1
+
+    def register(self, app):
+        super(JModule, self).register(app)
+        self.number = 1
+        _thread.start_new_thread(self._execute_periodically, (10, self._send))
 
 
 class ReconnectModule(Module):
@@ -132,6 +158,7 @@ class NotifyModule(Module):
         return bool(self._pending.qsize())
 
     def _on_notification(self, msg):
+        print(msg)
         self._pending.put(msg)
         GLib.idle_add(self._notification_send)
 
